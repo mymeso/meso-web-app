@@ -20,11 +20,7 @@ function MyKottagePageContent() {
   });
 
   const handleSectionClick = (section: string) => {
-    router.push(`/provider/my-kottage/${section}`);
-  };
-
-  const handleSaveAndContinue = () => {
-    // ... existing code ...
+    router.push(`/provider/my-storefront/${section}`);
   };
 
   const isSectionComplete = (sectionKey: string): boolean => {
@@ -134,7 +130,7 @@ function MyKottagePageContent() {
             </div>
           </div>
           <div style={{ textAlign: 'center', marginTop: 60, fontSize: '1rem' }}>
-            <span role="img" aria-label="mobile">📱</span> Preview kottage.ai/yourshop
+            <span role="img" aria-label="mobile">📱</span> Preview meso.ai/yourshop
           </div>
         </div>
       </main>
