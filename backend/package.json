@@ -1,7 +1,7 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "description": "KottageAI backend service",
+  "description": "Meso backend service",
   "main": "dist/index.js",
   "scripts": {
     "start": "node dist/index.js",
