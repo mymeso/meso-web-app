@@ -14,20 +14,20 @@ export default function ProgressButton({ label, isActive, isCompleted, onClick, 
   const [isHovered, setIsHovered] = useState(false);
   
   const baseStyles: React.CSSProperties = {
-    padding: "8px 20px",
+    padding: "8px 16px",
     borderRadius: "8px",
     borderWidth: "1.5px",
     borderStyle: "solid",
     borderColor: isCompleted ? 'transparent' : "#d1d5db",
     backgroundColor: isHovered && !isCompleted ? "#f8fafc" : (isCompleted ? "#f8fafc" : "transparent"),
     color: "#334155",
-    fontWeight: 600,
-    fontSize: "16px",
+    fontWeight: 500,
+    fontSize: "15px",
     cursor: "pointer",
+    letterSpacing: '0.5px',
     transition: "all 0.2s ease-in-out",
     display: "flex",
     alignItems: "center",
-    gap: "8px",
   };
 
   if (isActive) {
@@ -42,7 +42,6 @@ export default function ProgressButton({ label, isActive, isCompleted, onClick, 
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {icon && <Image src={icon} alt="" width={18} height={18} />}
       {label}
       {isCompleted && <span style={{ color: "#10b981" }}>✓</span>}
     </button>

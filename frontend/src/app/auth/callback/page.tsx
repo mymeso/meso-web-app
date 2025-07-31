@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
+import { shopsApi } from '@/lib/api/shops';
 
 export default function CallbackPage() {
   const router = useRouter();
@@ -11,23 +12,32 @@ export default function CallbackPage() {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('*')
+        .select('is_provider')
         .eq('id', userId)
         .single();
 
       if (error && error.code === 'PGRST116') {
-        // No profile found, redirect to additional info
-        return false;
+        return { exists: false, isProvider: false };
       }
       
       if (error) {
         console.error('Error checking profile:', error);
-        return false;
+        return { exists: false, isProvider: false };
       }
 
-      return !!data;
+      return { exists: !!data, isProvider: data.is_provider };
     } catch (err) {
       console.error('Unexpected error checking profile:', err);
+      return { exists: false, isProvider: false };
+    }
+  };
+
+  const checkIfShopExists = async (userId: string) => {
+    try {
+      const shop = await shopsApi.getShopByProviderId(userId);
+      return !!shop;
+    } catch (error) {
+      console.error('Failed to fetch user shop:', error);
       return false;
     }
   };
@@ -35,18 +45,21 @@ export default function CallbackPage() {
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
-        const { data: { user }, error } = await supabase.auth.getUser();
+        const { data: { user } } = await supabase.auth.getUser();
         
-        if (error) {
-          console.error('Error getting user:', error);
-          router.push('/auth/login');
-          return;
-        }
-
         if (user) {
-          const hasProfile = await checkUserProfile(user.id);
-          if (hasProfile) {
-            router.push('/provider/dashboard');
+          const { exists, isProvider } = await checkUserProfile(user.id);
+          if (exists) {
+            if (isProvider) {
+              const shopExists = await checkIfShopExists(user.id);
+              if (shopExists) {
+                router.push('/provider/dashboard');
+              } else {
+                router.push('/provider/setup');
+              }
+            } else {
+              router.push('/'); 
+            }
           } else {
             router.push('/auth/additional-info');
           }

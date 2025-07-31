@@ -480,7 +480,7 @@ export default function SchedulingPage() {
           {/* Navigation */}
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 40 }}>
             <button 
-              onClick={() => router.push('/provider/my-kottage')} 
+              onClick={() => router.push('/provider/my-storefront')} 
               style={{ 
                 padding: '12px 24px', 
                 backgroundColor: '#3b82f6', 

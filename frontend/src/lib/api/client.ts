@@ -29,7 +29,8 @@ class ApiClient {
       throw new Error(error.error || `GET ${endpoint} failed`);
     }
     
-    return response.json();
+    const text = await response.text();
+    return text ? JSON.parse(text) : null;
   }
 
   async post(endpoint: string, data: any) {
