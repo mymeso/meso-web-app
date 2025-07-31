@@ -2,8 +2,10 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from '../app/page.module.css';
+import { useRedirectIfShopNotSetup } from '@/hooks/useRedirectIfShopNotSetup';
 
 export default function ProviderOnboardingPage() {
+  useRedirectIfShopNotSetup();
   const router = useRouter();
   const [inputValue, setInputValue] = useState('');
   const [loading, setLoading] = useState(false);
@@ -36,7 +38,7 @@ export default function ProviderOnboardingPage() {
         localStorage.setItem('kottageSetupForm', JSON.stringify(initialFormData));
       }
 
-      router.push(`/provider/my-kottage`);
+      router.push(`/provider/my-storefront`);
 
     } catch (error) {
       console.error(error);

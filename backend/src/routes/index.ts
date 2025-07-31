@@ -1,10 +1,10 @@
 import { Router } from 'express';
 import profilesRoutes from './profiles.routes';
-import generateRoutes from './generate';
+import shopsRoutes from './shops.routes';
 
 const router = Router();
 
 router.use('/profiles', profilesRoutes);
-router.use('/generate', generateRoutes);
+router.use('/shops', shopsRoutes);
 
 export default router;

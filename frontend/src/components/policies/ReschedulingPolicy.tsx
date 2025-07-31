@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { SECTION_FIELDS, FieldDef } from '@/lib/section-defs';
+import { FieldDef } from '@/lib/section-defs';
 
 interface ReschedulingPolicyProps {
   onDataChange: (data: any) => void;
@@ -51,18 +51,8 @@ export const ReschedulingPolicy: React.FC<ReschedulingPolicyProps> = ({ onDataCh
     setFormData(prev => ({ ...prev, [key]: value }));
   };
 
-  const fields = SECTION_FIELDS['rescheduling-policy'] || [];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-      {fields.map(field => (
-        <div key={field.key}>
-          <label style={{ display: 'block', marginBottom: 8, fontSize: 14, fontWeight: 500 }}>
-            {field.label} {field.mandatory && <span style={{ color: 'red' }}>*</span>}
-          </label>
-          {renderField(field, formData[field.key], (value) => handleFieldChange(field.key, value))}
-        </div>
-      ))}
-    </div>
+    <div>TBI</div>
   );
 }; 
