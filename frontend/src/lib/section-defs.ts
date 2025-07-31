@@ -25,5 +25,5 @@ export const PERSONALIZATION = [
 ];
 
 export const LIST_SERVICES = [
-  { key: 'list-services', label: 'List Services', icon: '/file.svg' },
+  { key: 'list-services', label: 'Create Listing', icon: '/file.svg' },
 ];

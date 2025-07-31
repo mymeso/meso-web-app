@@ -73,9 +73,9 @@ function MyStorefrontPageContent() {
             </div>
           </div>
           <div style={{ marginBottom: 40 }}>
-            <div style={{ fontWeight: 700, marginBottom: 16, fontSize: '1.125rem' }}>3. Personalize Your Shop</div>
-            <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-              {PERSONALIZATION.map(section => {
+            <div style={{ fontWeight: 700, marginBottom: 16, fontSize: '1.125rem' }}>3. List Your Services</div>
+            <div style={{ display: 'flex', gap: 16 }}>
+              {LIST_SERVICES.map(section => {
                 const isCompleted = completedSections[section.key] === true;
                 return (
                   <ProgressButton
@@ -90,9 +90,9 @@ function MyStorefrontPageContent() {
             </div>
           </div>
           <div style={{ marginBottom: 40 }}>
-            <div style={{ fontWeight: 700, marginBottom: 16, fontSize: '1.125rem' }}>4. List your services</div>
-            <div style={{ display: 'flex', gap: 16 }}>
-              {LIST_SERVICES.map(section => {
+            <div style={{ fontWeight: 700, marginBottom: 16, fontSize: '1.125rem' }}>4. Personalize Your Shop</div>
+            <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+              {PERSONALIZATION.map(section => {
                 const isCompleted = completedSections[section.key] === true;
                 return (
                   <ProgressButton
