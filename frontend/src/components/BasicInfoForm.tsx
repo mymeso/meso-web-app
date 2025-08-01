@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useState } from 'react';
+import { SaveContinueButton } from './ui/SaveContinueButton';
 
 interface BasicInfoFormProps {
   onSave?: (formData: Record<string, any>) => void;
@@ -9,8 +10,6 @@ interface BasicInfoFormProps {
 
 export default function BasicInfoForm({ 
   onSave, 
-  showSaveButton = true, 
-  saveButtonText = "Save & Continue" 
 }: BasicInfoFormProps) {
   const [formData, setFormData] = useState<Record<string, any>>({
     firstName: '',
@@ -47,105 +46,87 @@ export default function BasicInfoForm({
 
   return (
     <div>
-      <h1 style={{ fontSize: '1.75rem', fontWeight: 700, marginBottom: '0.5rem' }}>Basic Info</h1>
-      <p style={{ marginBottom: '2rem', color: '#6b7280' }}>You can change this anytime.</p>
+      <h1 className="text-3xl font-bold mt-4 mb-2">Basic Info</h1>
+      <p className="mb-5 text-gray-500">You can change this anytime.</p>
       
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginBottom: '2rem' }}>
+      <div className="flex flex-col gap-5 mb-6">
         <div>
-          <label className="form-label">
+          <label className="block text-sm font-bold text-gray-700 mb-1">
             First name
           </label>
           <input
             type="text"
             value={formData.firstName}
             onChange={(e) => handleFieldChange('firstName', e.target.value)}
-            style={{ width: '100%' }}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             placeholder="Enter your first name"
           />
         </div>
 
         <div>
-          <label className="form-label">
+          <label className="block text-sm font-bold text-gray-700 mb-1">
             Business name
           </label>
           <input
             type="text"
             value={formData.businessName}
             onChange={(e) => handleFieldChange('businessName', e.target.value)}
-            style={{ width: '100%' }}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             placeholder="Enter your business name"
           />
         </div>
 
         <div>
-          <label className="form-label">
+          <label className="block text-sm font-bold text-gray-700 mb-1">
             Subdomain
           </label>
           <input  
             type="text"
             value={formData.subdomain}
             onChange={(e) => handleFieldChange('subdomain', e.target.value)}
-            style={{ width: '100%' }}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             placeholder="Enter your subdomain"
           />
         </div>
 
         <div>
-          <label className="form-label">
+          <label className="block text-sm font-bold text-gray-700 mb-1">
             Email address
           </label>
           <input
             type="email"
             value={formData.emailAddress}
             onChange={(e) => handleFieldChange('emailAddress', e.target.value)}
-            style={{ width: '100%' }}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             placeholder="Enter your email address"
           />
         </div>
 
         <div>
-          <label className="form-label">
+          <label className="block text-sm font-bold text-gray-700 mb-1">
             Phone number
           </label>
-          <div style={{ display: 'flex', gap: '8px' }}>
+          <div className="flex gap-2">
             <input
               type="text"
               value="+65"
               readOnly
-              style={{
-                width: '80px',
-                textAlign: 'center',
-                color: '#6b7280'
-              }}
+              className="w-20 px-3 py-2 border border-gray-300 rounded-md shadow-sm text-center text-gray-500 bg-gray-50"
             />
             <input
               type="tel"
               value={formData.phoneNumber.replace('+65 ', '')}
               onChange={(e) => handleFieldChange('phoneNumber', `+65 ${e.target.value}`)}
-              style={{ flex: 1 }}
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder="Enter your phone number"
             />
           </div>
         </div>
       </div>
 
-      {showSaveButton && (
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 40 }}>
-          <button 
-            onClick={handleSave} 
-            style={{ 
-              padding: '12px 24px', 
-              backgroundColor: '#2563eb', 
-              color: 'white', 
-              borderRadius: 8, 
-              border: 'none', 
-              fontSize: 16 
-            }}
-          >
-            {saveButtonText}
-          </button>
-        </div>
-      )}
+      <div className="flex justify-end">
+        <SaveContinueButton onClick={handleSave} />
+      </div>
     </div>
   );
 } 

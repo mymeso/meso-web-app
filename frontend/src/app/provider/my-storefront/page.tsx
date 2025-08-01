@@ -34,16 +34,16 @@ function MyStorefrontPageContent() {
   }, []);
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: 'white' }}>
+    <div className="flex min-h-screen bg-white">
       <Sidebar />
-      <main style={{ flex: 1, padding: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ maxWidth: 960, margin: '0 auto', transform: 'translateX(-100px)' }}>
-          <h2 style={{ textAlign: 'left', marginBottom: 40, fontSize: '1.75rem', fontWeight: 700 }}>
+      <main className="flex-1 min-w-0 p-8 flex items-center justify-center">
+        <div className="w-full max-w-4xl mx-auto">
+          <h2 className="text-left mb-10 text-3xl font-bold">
             Complete these steps to set up your storefront.
           </h2>
-          <div style={{ marginBottom: 40 }}>
-            <div style={{ fontWeight: 700, marginBottom: 16, fontSize: '1.125rem' }}>1. Create Your Shop Profile</div>
-            <div style={{ display: 'flex', gap: 16 }}>
+          <div className="mb-10">
+            <div className="font-bold mb-4 text-lg">1. Create Your Shop Profile</div>
+            <div className="flex gap-4 flex-wrap">
               {SHOP_PROFILE.map(section => (
                 <ProgressButton
                   key={section.key}
@@ -55,9 +55,9 @@ function MyStorefrontPageContent() {
               ))}
             </div>
           </div>
-          <div style={{ marginBottom: 40 }}>
-            <div style={{ fontWeight: 700, marginBottom: 16, fontSize: '1.125rem' }}>2. Set Your Business Preferences</div>
-            <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+          <div className="mb-10">
+            <div className="font-bold mb-4 text-lg">2. Set Your Business Preferences</div>
+            <div className="flex gap-4 flex-wrap">
               {BUSINESS_LOGISTICS.map(section => {
                 const isCompleted = completedSections[section.key] === true;
                 return (
@@ -72,9 +72,9 @@ function MyStorefrontPageContent() {
               })}
             </div>
           </div>
-          <div style={{ marginBottom: 40 }}>
-            <div style={{ fontWeight: 700, marginBottom: 16, fontSize: '1.125rem' }}>3. List Your Services</div>
-            <div style={{ display: 'flex', gap: 16 }}>
+          <div className="mb-10">
+            <div className="font-bold mb-4 text-lg">3. List Your Services</div>
+            <div className="flex gap-4 flex-wrap">
               {LIST_SERVICES.map(section => {
                 const isCompleted = completedSections[section.key] === true;
                 return (
@@ -89,9 +89,9 @@ function MyStorefrontPageContent() {
               })}
             </div>
           </div>
-          <div style={{ marginBottom: 40 }}>
-            <div style={{ fontWeight: 700, marginBottom: 16, fontSize: '1.125rem' }}>4. Personalize Your Shop</div>
-            <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+          <div className="mb-10">
+            <div className="font-bold mb-4 text-lg">4. Personalize Your Shop</div>
+            <div className="flex gap-4 flex-wrap">
               {PERSONALIZATION.map(section => {
                 const isCompleted = completedSections[section.key] === true;
                 return (
@@ -106,7 +106,7 @@ function MyStorefrontPageContent() {
               })}
             </div>
           </div>
-          <div style={{ textAlign: 'center', marginTop: 60, fontSize: '1rem' }}>
+          <div className="text-center mt-15 text-base">
             <span role="img" aria-label="mobile">📱</span> Preview meso.ai/yourshop
           </div>
         </div>
