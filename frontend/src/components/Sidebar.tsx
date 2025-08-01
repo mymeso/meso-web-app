@@ -15,20 +15,7 @@ const NavItem = ({ href, iconSrc, label, active, onClick }: { href: string; icon
         return (
             <button
                 onClick={onClick}
-                style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '12px',
-                    padding: '12px 16px',
-                    borderRadius: '8px',
-                    backgroundColor: 'transparent',
-                    color: '#374151',
-                    fontWeight: 500,
-                    border: 'none',
-                    cursor: 'pointer',
-                    width: '100%',
-                    textAlign: 'left'
-                }}
+                className="flex items-center gap-3 p-3 rounded-lg bg-transparent text-gray-700 font-medium border-none cursor-pointer w-full text-left hover:bg-gray-100 transition-colors"
             >
                 <Icon src={iconSrc} alt={label} />
                 <span>{label}</span>
@@ -38,16 +25,11 @@ const NavItem = ({ href, iconSrc, label, active, onClick }: { href: string; icon
 
     return (
         <Link href={href}>
-            <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                padding: '12px 16px',
-                borderRadius: '8px',
-                backgroundColor: active ? '#eef2ff' : 'transparent',
-                color: active ? '#4f46e5' : '#374151',
-                fontWeight: active ? 600 : 500,
-            }}>
+            <div className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${
+                active 
+                    ? 'bg-blue-50 text-indigo-600 font-semibold' 
+                    : 'bg-transparent text-gray-700 font-medium hover:bg-gray-100'
+            }`}>
                 <Icon src={iconSrc} alt={label} />
                 <span>{label}</span>
             </div>
@@ -67,20 +49,12 @@ export default function Sidebar() {
     };
 
     return (
-        <aside style={{
-            width: '280px',
-            backgroundColor: '#f9fafb',
-            padding: '24px',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between',
-            borderRight: '1px solid #e5e7eb',
-        }}>
+        <aside className="w-[240px] bg-gray-50 p-6 flex flex-col justify-between border-r border-gray-200 flex-shrink-0">
             <div>
-                <div style={{ padding: '0 16px', marginBottom: '24px' }}>
-                    <h1 style={{ fontSize: '1.75rem', fontWeight: 'bold', margin: 0 }}>meso</h1>
+                <div className="px-4 mb-6">
+                    <h1 className="text-3xl font-bold m-0">meso</h1>
                 </div>
-                <nav style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <nav className="flex flex-col gap-2">
                     <NavItem href="/provider/dashboard" iconSrc="/window.svg" label="Dashboard" active={pathname === '/provider/dashboard'} />
                     <NavItem href="/provider/bookings" iconSrc="/file.svg" label="Bookings" active={pathname === '/provider/bookings'} />
                     <NavItem href="/provider/calendar" iconSrc="/globe.svg" label="Calendar" active={pathname === '/provider/calendar'} />
@@ -91,50 +65,16 @@ export default function Sidebar() {
             <div>
                 {/* User info */}
                 {user && (
-                    <div style={{
-                        padding: '12px 16px',
-                        borderTop: '1px solid #e5e7eb',
-                        marginBottom: '12px'
-                    }}>
-                        <div style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '12px'
-                        }}>
-                            <div style={{
-                                width: '32px',
-                                height: '32px',
-                                borderRadius: '50%',
-                                backgroundColor: '#3b82f6',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                color: 'white',
-                                fontSize: '14px',
-                                fontWeight: 600
-                            }}>
+                    <div className="p-3 border-t border-gray-200 mb-3">
+                        <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-sm font-semibold">
                                 {user.user_metadata?.full_name?.charAt(0)?.toUpperCase() || user.email?.charAt(0)?.toUpperCase() || 'U'}
                             </div>
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                                <p style={{ 
-                                    margin: 0, 
-                                    fontSize: '14px', 
-                                    fontWeight: 600, 
-                                    color: '#1f2937',
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                    whiteSpace: 'nowrap'
-                                }}>
+                            <div className="flex-1 min-w-0">
+                                <p className="text-sm font-semibold text-gray-800 truncate">
                                     {user.user_metadata?.full_name || 'User'}
                                 </p>
-                                <p style={{ 
-                                    margin: 0, 
-                                    fontSize: '12px', 
-                                    color: '#6b7280',
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                    whiteSpace: 'nowrap'
-                                }}>
+                                <p className="text-xs text-gray-500 truncate">
                                     {user.email}
                                 </p>
                             </div>
