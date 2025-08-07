@@ -32,11 +32,7 @@ export default function CustomerBookingPoliciesPage() {
   }, [activePolicy]); 
 
   const handleSave = () => {
-    if (typeof window !== 'undefined') {
-      const flatData = Object.values(allPolicyData).reduce((acc, policyData) => ({ ...acc, ...policyData }), {});
-      localStorage.setItem('kottageSetupForm', JSON.stringify(flatData));
-      alert('Policies saved!');
-    }
+    alert('Policies saved!');
   };
 
   const ActivePolicyComponent = POLICIES.find(p => p.key === activePolicy)?.Component;

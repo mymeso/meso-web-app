@@ -1,7 +1,7 @@
 "use client";
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import BasicInfoForm from '@/components/BasicInfoForm';
+import BasicInfoForm from '@/components/shop-profile/BasicInfoForm';
 
 export default function SetupBasicInfoPage() {
   const router = useRouter();

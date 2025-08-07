@@ -2,7 +2,7 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import Sidebar from '@/components/Sidebar';
-import BasicInfoForm from '@/components/BasicInfoForm';
+import BasicInfoForm from '@/components/shop-profile/BasicInfoForm';
 
 export default function BasicInfoPage() {
   const router = useRouter();

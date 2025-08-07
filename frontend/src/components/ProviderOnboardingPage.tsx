@@ -34,10 +34,6 @@ export default function ProviderOnboardingPage() {
         initialFormData.serviceSubcategory = data.classification.subcategory;
       }
 
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('kottageSetupForm', JSON.stringify(initialFormData));
-      }
-
       router.push(`/provider/my-storefront`);
 
     } catch (error) {

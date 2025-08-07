@@ -1,0 +1,13 @@
+export { TitleComponent } from './TitleComponent';
+export { DescriptionComponent } from './DescriptionComponent';
+export { MediaComponent } from './MediaComponent';
+export { WhatsIncludedComponent } from './WhatsIncludedComponent';
+export { PricingDescriptionComponent } from './PricingDescriptionComponent';
+export { DurationComponent } from './DurationComponent';
+export { LocationComponent } from './LocationComponent';
+export { PackageFlexibilityComponent } from './PackageFlexibilityComponent';
+export { LessonCountComponent } from './LessonCountComponent';
+export { StudentCountComponent } from './StudentCountComponent';
+export { PersonnelComponent } from './PersonnelComponent';
+export { AddOnsComponent } from './AddOnsComponent';
+export { AddComponentButton } from './AddComponentButton'; 

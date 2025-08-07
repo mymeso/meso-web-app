@@ -27,16 +27,7 @@ function renderField(field: FieldDef, value: any, onChange: (v: any) => void) {
 export const LatePolicy: React.FC<LatePolicyProps> = ({ onDataChange }) => {
   const [formData, setFormData] = useState<Record<string, any>>({});
 
-  useEffect(() => {
-    // Load data from localStorage on component mount
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('kottageSetupForm');
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        setFormData(parsed);
-      }
-    }
-  }, []);
+
 
   const memoizedOnDataChange = useCallback(() => {
     onDataChange(formData);

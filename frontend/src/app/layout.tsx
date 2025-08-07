@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Kottage - Professional Service Booking",
+  title: "Meso - Professional Service Booking",
   description: "Book professional services with ease",
 };
 

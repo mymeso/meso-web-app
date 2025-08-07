@@ -1,7 +1,7 @@
 "use client";
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import AboutYouForm from '@/components/AboutYouForm';
+import AboutYouForm from '@/components/shop-profile/AboutYouForm';
 
 export default function SetupAboutYouPage() {
   const router = useRouter();
