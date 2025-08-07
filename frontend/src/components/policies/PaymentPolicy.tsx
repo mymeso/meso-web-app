@@ -26,24 +26,7 @@ export const PaymentPolicy: React.FC<PaymentPolicyProps> = ({ onDataChange }) =>
 
   const [selectedPaymentRequirement, setSelectedPaymentRequirement] = useState('full-payment');
 
-  useEffect(() => {
-    // Load data from localStorage on component mount
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('kottageSetupForm');
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (parsed.onlinePaymentMethods) {
-          setOnlinePaymentMethods(parsed.onlinePaymentMethods);
-        }
-        if (parsed.onsitePaymentMethods) {
-          setOnsitePaymentMethods(parsed.onsitePaymentMethods);
-        }
-        if (parsed.selectedPaymentRequirement) {
-          setSelectedPaymentRequirement(parsed.selectedPaymentRequirement);
-        }
-      }
-    }
-  }, []);
+
 
   const memoizedOnDataChange = useCallback(() => {
     onDataChange({ onlinePaymentMethods, onsitePaymentMethods, selectedPaymentRequirement });

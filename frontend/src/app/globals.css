@@ -77,9 +77,9 @@ input[type="password"],
 input[type="number"],
 input,
 textarea {
-  background-color: #F4F2F0 !important;
+  background-color: #F4F2F0;
   padding: 10px 14px;
-  border: 1px solid #e5e7eb;
+  border: 0px solid #e5e7eb;
   border-radius: 8px;
   font-size: 15px;
   outline: none;
@@ -100,7 +100,6 @@ textarea:focus {
 /* Standard form label styling */
 .form-label {
   display: block;
-  margin-bottom: 0.5rem;
   font-weight: 500;
   color: #374151;
 }

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import ProgressButton from "@/components/ui/ProgressButton";
 import Sidebar from '@/components/Sidebar';
@@ -25,13 +25,7 @@ function MyStorefrontPageContent() {
     return false
   };
 
-  // TODO:Load stored data on mount
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('kottageSetupForm');
-      if (stored) setFormData(JSON.parse(stored));
-    }
-  }, []);
+
 
   return (
     <div className="flex min-h-screen bg-white">

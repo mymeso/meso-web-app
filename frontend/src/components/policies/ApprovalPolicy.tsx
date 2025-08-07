@@ -8,18 +8,7 @@ interface ApprovalPolicyProps {
 export const ApprovalPolicy: React.FC<ApprovalPolicyProps> = ({ onDataChange }) => {
   const [bookingApprovalMode, setBookingApprovalMode] = useState('instant');
 
-  useEffect(() => {
-    // Load data from localStorage on component mount
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('kottageSetupForm');
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (parsed.bookingApprovalMode) {
-          setBookingApprovalMode(parsed.bookingApprovalMode);
-        }
-      }
-    }
-  }, []);
+
 
   useEffect(() => {
     // Notify parent component of data changes
