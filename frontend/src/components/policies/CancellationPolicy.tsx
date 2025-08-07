@@ -88,18 +88,18 @@ export const CancellationPolicy: React.FC = () => {
         <div className="flex-1 p-3 flex items-center gap-2 text-sm text-black font-medium flex-wrap bg-[#F4F2F0] rounded-md">
           <span className='p-2'>Cancel</span>
           
-          <input
-            type="number"
-            value={rule.cancelTime}
-            onChange={e => updateRule(rule.id, 'cancelTime', parseInt(e.target.value))}
-            className="w-15 text-center !border-none rounded-md !bg-white text-sm"
-          />
-          
-          <select
-            value={rule.timeUnit}
-            onChange={e => updateRule(rule.id, 'timeUnit', e.target.value)}
-            className="px-2 py-1 border border-gray-300 rounded bg-white text-sm appearance-none cursor-pointer"
-          >
+            <input
+             type="number"
+             value={rule.cancelTime}
+             onChange={e => updateRule(rule.id, 'cancelTime', parseInt(e.target.value))}
+             className="py-1 w-11 h-11 text-center rounded-lg !bg-white text-sm cursor-pointer [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+           />
+           
+           <select
+             value={rule.timeUnit}
+             onChange={e => updateRule(rule.id, 'timeUnit', e.target.value)}
+             className="px-2 py-2 h-11 text-center rounded-lg !bg-white text-sm appearance-none cursor-pointer"
+           >
             <option value="hours">hours</option>
             <option value="days">days</option>
             <option value="day">day</option>
@@ -116,7 +116,7 @@ export const CancellationPolicy: React.FC = () => {
                 type="number"
                 value={rule.refundValue}
                 onChange={e => updateRule(rule.id, 'refundValue', parseInt(e.target.value))}
-                className="w-12 px-2 py-1 text-center border border-gray-300 rounded bg-white text-sm"
+                className="w-14 px-2 py-1 h-11 text-center !border-none rounded-md !bg-white text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               />
               <span>%</span>
               <span>refund</span>
@@ -128,7 +128,7 @@ export const CancellationPolicy: React.FC = () => {
               <select
                 value={rule.refundType}
                 onChange={e => updateRule(rule.id, 'refundType', e.target.value)}
-                className="px-2 py-1 border border-gray-300 rounded bg-white text-sm appearance-none cursor-pointer"
+                className="px-2 py-1 h-11 rounded-md !bg-white text-sm appearance-none cursor-pointer"
               >
                 <option value="full_deposit">full deposit</option>
                 <option value="half_deposit">half deposit</option>
@@ -142,7 +142,7 @@ export const CancellationPolicy: React.FC = () => {
               <select
                 value={rule.refundType}
                 onChange={e => updateRule(rule.id, 'refundType', e.target.value)}
-                className="px-2 py-1 border border-gray-300 rounded bg-white text-sm appearance-none cursor-pointer"
+                className="px-2 py-1 h-11 rounded-md !bg-white text-sm appearance-none cursor-pointer"
               >
                 <option value="no_penalty">with no penalty</option>
                 <option value="with_penalty">with a penalty</option>
@@ -155,7 +155,7 @@ export const CancellationPolicy: React.FC = () => {
                     type="number"
                     value={rule.refundValue}
                     onChange={e => updateRule(rule.id, 'refundValue', parseInt(e.target.value))}
-                    className="w-12 px-2 py-1 text-center border border-gray-300 rounded bg-white text-sm"
+                    className="w-14 px-2 py-1 h-11 text-center !border-none rounded-md !bg-white text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
                   <span>%</span>
                 </>
@@ -168,14 +168,14 @@ export const CancellationPolicy: React.FC = () => {
       {/* Action Buttons */}
       <button 
         onClick={() => removeRule(rule.id)} 
-        className="w-8 h-8 flex items-center justify-center bg-white border border-gray-300 rounded text-gray-600 hover:bg-gray-50"
+        className="w-8 h-8 flex items-center justify-center bg-[#F4F2F0] border-none rounded-md text-gray-600 hover:bg-gray-50"
       >
         -
       </button>
       {isLast ? (
         <button 
           onClick={addRule} 
-          className="w-8 h-8 flex items-center justify-center bg-white border border-gray-300 rounded text-gray-600 hover:bg-gray-50"
+          className="w-8 h-8 flex items-center justify-center bg-[#F4F2F0] border-none rounded-md text-gray-600 hover:bg-gray-50"
         >
           +
         </button>
