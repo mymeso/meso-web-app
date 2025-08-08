@@ -8,28 +8,36 @@ import { CancellationPolicy } from '@/components/policies/CancellationPolicy';
 import { LatePolicy } from '@/components/policies/LatePolicy';
 import { PolicyButton } from '@/components/policies/PolicyButton';
 import { ReschedulingPolicy } from '@/components/policies/ReschedulingPolicy';
+import { WaitlistPolicy } from '@/components/policies/WaitlistPolicy';
 
-type PolicyType = 'approval-policy' | 'payment-policy' | 'cancellation-policy' | 'late-policy' | 'booking-policy';
+export type PolicyType =
+  | 'payment-policy'
+  | 'cancellation-policy'
+  | 'rescheduling-policy'
+  | 'lateness-policy'
+  | 'approval-policy'
+  | 'waitlist-policy';
 
-const POLICIES = [
-  { key: 'approval-policy' as PolicyType, label: 'Approval', Component: ApprovalPolicy },
-  { key: 'payment-policy' as PolicyType, label: 'Payment', Component: PaymentPolicy },
-  { key: 'cancellation-policy' as PolicyType, label: 'Cancellation', Component: CancellationPolicy },
-  { key: 'lateness-policy' as PolicyType, label: 'Lateness', Component: LatePolicy },
-  { key: 'rescheduling-policy' as PolicyType, label: 'Rescheduling', Component: ReschedulingPolicy },
+const POLICIES: { key: PolicyType; label: string; Component: React.FC<any> }[] = [
+  { key: 'payment-policy', label: 'Payment', Component: PaymentPolicy },
+  { key: 'cancellation-policy', label: 'Cancellation', Component: CancellationPolicy },
+  { key: 'rescheduling-policy', label: 'Rescheduling', Component: ReschedulingPolicy },
+  { key: 'lateness-policy', label: 'Lateness', Component: LatePolicy },
+  { key: 'approval-policy', label: 'Approval', Component: ApprovalPolicy },
+  { key: 'waitlist-policy', label: 'Waitlist', Component: WaitlistPolicy },
 ];
 
 export default function CustomerBookingPoliciesPage() {
   const router = useRouter();
-  const [activePolicy, setActivePolicy] = useState<PolicyType>('approval-policy');
+  const [activePolicy, setActivePolicy] = useState<PolicyType>('cancellation-policy');
   const [allPolicyData, setAllPolicyData] = useState<Record<string, any>>({});
 
   const handleDataChange = useCallback((data: any) => {
     setAllPolicyData(prev => ({
       ...prev,
-      [activePolicy]: data, 
+      [activePolicy]: data,
     }));
-  }, [activePolicy]); 
+  }, [activePolicy]);
 
   const handleSave = () => {
     alert('Policies saved!');
@@ -42,12 +50,12 @@ export default function CustomerBookingPoliciesPage() {
       <Sidebar />
       <main style={{ flex: 1, padding: '2rem' }}>
         <div style={{ maxWidth: 960, margin: '0 auto' }}>
-          <h1 style={{ fontSize: '1.75rem', fontWeight: 700 }}>Customer Booking Policies</h1>
-          <p style={{ marginTop: 8, marginBottom: '2rem', color: '#64748b', fontSize: '1rem' }}>
-            Choose your default settings. Policies for individual service listings can be adjusted in the listing editor.
+          <h1 style={{ fontSize: '1.75rem', fontWeight: 700 }}>Booking Policies</h1>
+          <p style={{ marginTop: 8, marginBottom: '1.5rem', color: '#64748b', fontSize: '0.9rem' }}>
+            Set your default policies. Policies for individual service listings can be adjusted in the listing editor.
           </p>
-          
-          <div style={{ display: 'flex', gap: 16, marginBottom: 24 }}>
+
+          <div className="flex gap-8 mb-6">
             {POLICIES.map(policy => (
               <PolicyButton
                 key={policy.key}

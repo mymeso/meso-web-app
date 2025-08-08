@@ -26,8 +26,6 @@ export const PaymentPolicy: React.FC<PaymentPolicyProps> = ({ onDataChange }) =>
 
   const [selectedPaymentRequirement, setSelectedPaymentRequirement] = useState('full-payment');
 
-
-
   const memoizedOnDataChange = useCallback(() => {
     onDataChange({ onlinePaymentMethods, onsitePaymentMethods, selectedPaymentRequirement });
   }, [onlinePaymentMethods, onsitePaymentMethods, selectedPaymentRequirement, onDataChange]);
@@ -60,13 +58,13 @@ export const PaymentPolicy: React.FC<PaymentPolicyProps> = ({ onDataChange }) =>
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
       <div style={{ background: '#F4F2F0', padding: '24px', borderRadius: 12, border: '1px solid #EAE8E6' }}>
-        <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: 16 }}>Booking payment requirements</h3>
+        <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: 16 }}>Payment policy</h3>
         <RadioSelect
           options={[
-            { value: 'full-payment', label: 'Full payment at booking' },
-            { 
-              value: 'deposit', 
-              label: 'Deposit required',
+            { value: 'full-payment', label: 'Full payment required to book' },
+            {
+              value: 'deposit',
+              label: 'Deposit payment required to book',
               expandedContent: (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                   <div>
@@ -130,7 +128,8 @@ export const PaymentPolicy: React.FC<PaymentPolicyProps> = ({ onDataChange }) =>
                 </div>
               )
             },
-            { value: 'payment-after', label: 'Payment after service' },
+            { value: 'card-on-file', label: 'Card on file required to book' },
+            { value: 'no-upfront', label: 'No upfront payment required to book' },
           ]}
           selected={selectedPaymentRequirement}
           onChange={handlePaymentRequirementChange}

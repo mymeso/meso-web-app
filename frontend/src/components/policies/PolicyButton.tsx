@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 interface PolicyButtonProps {
   label: string;
@@ -7,26 +7,15 @@ interface PolicyButtonProps {
 }
 
 export const PolicyButton: React.FC<PolicyButtonProps> = ({ label, isActive, onClick }) => {
-  const [isHovered, setIsHovered] = useState(false);
-  
-  const style: React.CSSProperties = {
-    padding: "8px 20px",
-    borderRadius: "8px",
-    border: `1.5px solid ${isActive ? "#5B85CC" : "#d1d5db"}`,
-    backgroundColor: isHovered ? "white" : "transparent",
-    color: "#334155",
-    fontWeight: 600,
-    cursor: "pointer",
-    transition: "all 0.2s ease-in-out",
-    boxShadow: isActive ? "0 0 0 2px rgba(91, 133, 204, 0.2)" : "none",
-  };
-  
+  const base = 'px-5 py-2 rounded-lg text-sm font-semibold transition-colors';
+  const active = 'bg-[#5B85CC] text-white';
+  const inactive = 'bg-transparent text-[#5B85CC] hover:bg-[#e8efff]';
+
   return (
-    <button 
-      style={style} 
-      onClick={onClick} 
-      onMouseEnter={() => setIsHovered(true)} 
-      onMouseLeave={() => setIsHovered(false)}
+    <button
+      type="button"
+      onClick={onClick}
+      className={`${base} ${isActive ? active : inactive}`}
     >
       {label}
     </button>
