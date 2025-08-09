@@ -31,6 +31,7 @@ const DEFAULT_ONSITE: PaymentMethod[] = [
 export const PaymentPolicy: React.FC<PaymentPolicyProps> = ({ onDataChange }) => {
   const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const [onlinePaymentMethods, setOnlinePaymentMethods] = useState<PaymentMethod[]>(DEFAULT_ONLINE);
   const [onsitePaymentMethods, setOnsitePaymentMethods] = useState<PaymentMethod[]>(DEFAULT_ONSITE);
@@ -40,6 +41,7 @@ export const PaymentPolicy: React.FC<PaymentPolicyProps> = ({ onDataChange }) =>
   // Load effective policy on mount
   useEffect(() => {
     const loadPolicy = async () => {
+      setIsLoading(true);
       try {
         const effective = await paymentPoliciesApi.getEffective();
         if (effective) {
@@ -64,6 +66,8 @@ export const PaymentPolicy: React.FC<PaymentPolicyProps> = ({ onDataChange }) =>
         }
       } catch (e) {
         console.error('Failed to load payment policy', e);
+      } finally {
+        setIsLoading(false);
       }
     };
     loadPolicy();
@@ -133,6 +137,40 @@ export const PaymentPolicy: React.FC<PaymentPolicyProps> = ({ onDataChange }) =>
       setIsSaving(false);
     }
   };
+
+  // Loading skeleton
+  if (isLoading) {
+    return (
+      <div className="flex flex-col gap-6">
+        <div className="bg-[#F4F2F0] p-6 rounded-xl border border-[#EAE8E6]">
+          <div className="animate-pulse space-y-4">
+            <div className="h-6 w-40 bg-gray-200 rounded" />
+            <div className="h-12 bg-white rounded-lg" />
+            <div className="h-12 bg-white rounded-lg" />
+            <div className="h-12 bg-white rounded-lg" />
+            <div className="h-12 bg-white rounded-lg" />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {[0,1].map(i => (
+            <div key={i} className="bg-[#F4F2F0] p-6 rounded-xl border border-[#EAE8E6] animate-pulse space-y-3">
+              <div className="h-6 w-64 bg-gray-200 rounded" />
+              <div className="h-12 bg-white rounded-lg" />
+              <div className="h-12 bg-white rounded-lg" />
+              <div className="h-12 bg-white rounded-lg" />
+            </div>
+          ))}
+        </div>
+
+        <div className="flex justify-end gap-3">
+          <div className="h-11 w-24 bg-gray-200 rounded animate-pulse" />
+          <div className="h-11 w-24 bg-gray-200 rounded animate-pulse" />
+          <div className="h-11 w-36 bg-gray-200 rounded animate-pulse" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
