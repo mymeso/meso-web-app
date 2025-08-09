@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { ToggleSwitch } from '@/components/ui/ToggleSwitch';
 import { RadioSelect } from './RadioSelect';
-import { paymentPoliciesApi } from '@/lib/api/paymentPolicies';
+import { paymentPoliciesApi, PaymentPolicyResponse } from '@/lib/api/paymentPolicies';
 import { useRouter } from 'next/navigation';
 import { ExitButton } from '@/components/ui/ExitButton';
 import { SaveButton } from '@/components/ui/SaveButton';
@@ -14,6 +14,7 @@ interface PaymentMethod {
 
 interface PaymentPolicyProps {
   onDataChange: (data: any) => void;
+  initialData?: PaymentPolicyResponse;
 }
 
 const DEFAULT_ONLINE: PaymentMethod[] = [
@@ -28,7 +29,7 @@ const DEFAULT_ONSITE: PaymentMethod[] = [
   { name: 'Cash App', enabled: true },
 ];
 
-export const PaymentPolicy: React.FC<PaymentPolicyProps> = ({ onDataChange }) => {
+export const PaymentPolicy: React.FC<PaymentPolicyProps> = ({ onDataChange, initialData }) => {
   const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -38,41 +39,42 @@ export const PaymentPolicy: React.FC<PaymentPolicyProps> = ({ onDataChange }) =>
 
   const [selectedPaymentRequirement, setSelectedPaymentRequirement] = useState('full-payment');
 
-  // Load effective policy on mount
+  // Load effective policy on mount (or use initialData if provided)
   useEffect(() => {
-    const loadPolicy = async () => {
+    const hydrate = (effective: PaymentPolicyResponse | null | undefined) => {
+      if (!effective) return;
+      const req = effective.requirement;
+      if (req === 'full_payment') setSelectedPaymentRequirement('full-payment');
+      if (req === 'deposit') setSelectedPaymentRequirement('deposit');
+      if (req === 'card_on_file') setSelectedPaymentRequirement('card-on-file');
+      if (req === 'no_upfront') setSelectedPaymentRequirement('no-upfront');
+      if (Array.isArray(effective.online_methods)) {
+        setOnlinePaymentMethods(prev => prev.map(m => ({ ...m, enabled: effective.online_methods!.includes(m.name) })));
+      }
+      if (Array.isArray(effective.onsite_methods)) {
+        setOnsitePaymentMethods(prev => prev.map(m => ({ ...m, enabled: effective.onsite_methods!.includes(m.name) })));
+      }
+    };
+
+    if (initialData) {
+      hydrate(initialData);
+      return;
+    }
+
+    const load = async () => {
       setIsLoading(true);
       try {
         const effective = await paymentPoliciesApi.getEffective();
-        if (effective) {
-          // Map requirement
-          const req = effective.requirement;
-          if (req === 'full_payment') setSelectedPaymentRequirement('full-payment');
-          if (req === 'deposit') setSelectedPaymentRequirement('deposit');
-          if (req === 'card_on_file') setSelectedPaymentRequirement('card-on-file');
-          if (req === 'no_upfront') setSelectedPaymentRequirement('no-upfront');
-
-          // Map methods
-          if (Array.isArray(effective.online_methods)) {
-            setOnlinePaymentMethods(prev =>
-              prev.map(m => ({ ...m, enabled: effective.online_methods!.includes(m.name) }))
-            );
-          }
-          if (Array.isArray(effective.onsite_methods)) {
-            setOnsitePaymentMethods(prev =>
-              prev.map(m => ({ ...m, enabled: effective.onsite_methods!.includes(m.name) }))
-            );
-          }
-        }
+        hydrate(effective);
       } catch (e) {
         console.error('Failed to load payment policy', e);
       } finally {
         setIsLoading(false);
       }
     };
-    loadPolicy();
+    load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [initialData]);
 
   const memoizedOnDataChange = useCallback(() => {
     onDataChange({ onlinePaymentMethods, onsitePaymentMethods, selectedPaymentRequirement });

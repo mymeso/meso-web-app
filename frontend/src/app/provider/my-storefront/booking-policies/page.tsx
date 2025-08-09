@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import Sidebar from '@/components/Sidebar';
 import { ApprovalPolicy } from '@/components/policies/ApprovalPolicy';
 import { PaymentPolicy } from '@/components/policies/PaymentPolicy';
@@ -8,6 +8,8 @@ import { LatePolicy } from '@/components/policies/LatePolicy';
 import { PolicyButton } from '@/components/policies/PolicyButton';
 import { ReschedulingPolicy } from '@/components/policies/ReschedulingPolicy';
 import { WaitlistPolicy } from '@/components/policies/WaitlistPolicy';
+import { paymentPoliciesApi, PaymentPolicyResponse } from '@/lib/api/paymentPolicies';
+import { cancellationPoliciesApi, CancellationPolicyResponse } from '@/lib/api/cancellationPolicies';
 
 export type PolicyType =
   | 'payment-policy'
@@ -26,9 +28,13 @@ const POLICIES: { key: PolicyType; label: string; Component: React.FC<any> }[] =
   { key: 'waitlist-policy', label: 'Waitlist', Component: WaitlistPolicy },
 ];
 
-export default function BookingPoliciesPage() {
-  const [activePolicy, setActivePolicy] = useState<PolicyType>('payment-policy');
+export default function CustomerBookingPoliciesPage() {
+  const [activePolicy, setActivePolicy] = useState<PolicyType>('cancellation-policy');
   const [allPolicyData, setAllPolicyData] = useState<Record<string, any>>({});
+
+  // In-page cache so switching tabs doesn't re-fetch
+  const [paymentCache, setPaymentCache] = useState<PaymentPolicyResponse | undefined>(undefined);
+  const [cancellationCache, setCancellationCache] = useState<CancellationPolicyResponse | undefined>(undefined);
 
   const handleDataChange = useCallback((data: any) => {
     setAllPolicyData(prev => ({
@@ -36,6 +42,25 @@ export default function BookingPoliciesPage() {
       [activePolicy]: data,
     }));
   }, [activePolicy]);
+
+  // Lazy-load the active policy once
+  useEffect(() => {
+    const load = async () => {
+      if (activePolicy === 'payment-policy' && !paymentCache) {
+        try {
+          const data = await paymentPoliciesApi.getEffective();
+          setPaymentCache(data);
+        } catch (e) { /* no-op */ }
+      }
+      if (activePolicy === 'cancellation-policy' && !cancellationCache) {
+        try {
+          const data = await cancellationPoliciesApi.getEffective();
+          setCancellationCache(data);
+        } catch (e) { /* no-op */ }
+      }
+    };
+    load();
+  }, [activePolicy, paymentCache, cancellationCache]);
 
   const ActivePolicyComponent = POLICIES.find(p => p.key === activePolicy)?.Component;
 
@@ -62,7 +87,16 @@ export default function BookingPoliciesPage() {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             {ActivePolicyComponent && (
-              <ActivePolicyComponent onDataChange={handleDataChange} />
+              <ActivePolicyComponent
+                onDataChange={handleDataChange}
+                initialData={
+                  activePolicy === 'payment-policy'
+                    ? paymentCache
+                    : activePolicy === 'cancellation-policy'
+                    ? cancellationCache
+                    : undefined
+                }
+              />
             )}
           </div>
         </div>

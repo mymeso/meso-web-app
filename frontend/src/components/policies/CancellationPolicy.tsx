@@ -3,7 +3,7 @@ import { ToggleSwitch } from '../ui/ToggleSwitch';
 import { ExitButton } from '@/components/ui/ExitButton';
 import { SaveButton } from '@/components/ui/SaveButton';
 import { SaveContinueButton } from '@/components/ui/SaveContinueButton';
-import { cancellationPoliciesApi } from '@/lib/api/cancellationPolicies';
+import { cancellationPoliciesApi, CancellationPolicyResponse } from '@/lib/api/cancellationPolicies';
 import { useRouter } from 'next/navigation';
 
 interface Rule {
@@ -15,43 +15,57 @@ interface Rule {
   refundValue: number;
 }
 
-export const CancellationPolicy: React.FC = () => {
+interface CancellationPolicyProps {
+  initialData?: CancellationPolicyResponse;
+}
+
+export const CancellationPolicy: React.FC<CancellationPolicyProps> = ({ initialData }) => {
   const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [rules, setRules] = useState<Rule[]>([
-  ]);
+  const [rules, setRules] = useState<Rule[]>([]);
 
   const [allowFreeCancellation, setAllowFreeCancellation] = useState(true);
 
-  // Fetch effective policy from database
+  // Hydration helper
+  const hydrateFromResponse = (res?: CancellationPolicyResponse | null) => {
+    if (!res || !res.policy) return false;
+    setAllowFreeCancellation(!!res.policy.allow_free_cancellation);
+    if (Array.isArray(res.rules)) {
+      const mapped: Rule[] = res.rules.map((r, idx) => ({
+        id: idx + 1,
+        paymentType: r.payment_type as Rule['paymentType'],
+        cancelTime: r.cancel_time,
+        timeUnit: r.time_unit,
+        refundType: r.refund_type,
+        refundValue:
+          (r.refund_type === 'percentage' || r.refund_type === 'with_penalty') && typeof r.refund_value === 'number'
+            ? r.refund_value
+            : 0,
+      }));
+      setRules(mapped);
+    }
+    return true;
+  };
+
+  // Fetch effective policy from database (or use initialData on first render)
   useEffect(() => {
-    const fetchPolicy = async () => {
+    const run = async () => {
+      // If initial data provided, hydrate and skip fetch
+      if (initialData && hydrateFromResponse(initialData)) return;
+
       setIsLoading(true);
       try {
         const res = await cancellationPoliciesApi.getEffective();
-        if (res && res.policy) {
-          setAllowFreeCancellation(!!res.policy.allow_free_cancellation);
-          if (Array.isArray(res.rules) && res.rules.length > 0) {
-            const mapped: Rule[] = res.rules.map((r, idx) => ({
-              id: idx + 1,
-              paymentType: r.payment_type,
-              cancelTime: r.cancel_time,
-              timeUnit: r.time_unit,
-              refundType: r.refund_type,
-              refundValue: (r.refund_type === 'percentage' || r.refund_type === 'with_penalty') && typeof r.refund_value === 'number' ? r.refund_value : 0,
-            }));
-            setRules(mapped);
-          }
-        }
+        hydrateFromResponse(res);
       } catch (e) {
         console.error('Failed to load cancellation policy', e);
       } finally {
         setIsLoading(false);
       }
     };
-    fetchPolicy();
-  }, []);
+    run();
+  }, [initialData]);
 
   const savePolicy = async () => {
     const payload = {
@@ -61,7 +75,7 @@ export const CancellationPolicy: React.FC = () => {
         cancel_time: r.cancelTime,
         time_unit: r.timeUnit,
         refund_type: r.refundType,
-        refund_value: (r.refundType === 'percentage' || r.refundType === 'with_penalty') ? r.refundValue : null,
+        refund_value: r.refundType === 'percentage' || r.refundType === 'with_penalty' ? r.refundValue : null,
         sort_order: i,
       })),
     };
@@ -89,14 +103,10 @@ export const CancellationPolicy: React.FC = () => {
 
   const addRule = () => {
     const newId = rules.length > 0 ? Math.max(...rules.map(r => r.id)) + 1 : 1;
-    setRules([...rules, {
-      id: newId,
-      paymentType: 'full_payment',
-      cancelTime: 24,
-      timeUnit: 'hours',
-      refundType: 'percentage',
-      refundValue: 50
-    }]);
+    setRules([
+      ...rules,
+      { id: newId, paymentType: 'full_payment', cancelTime: 24, timeUnit: 'hours', refundType: 'percentage', refundValue: 50 },
+    ]);
   };
 
   const removeRule = (id: number) => {
@@ -246,7 +256,7 @@ export const CancellationPolicy: React.FC = () => {
 
       {/* Rules */}
       <div className="mb-6">
-        {rules.map((rule, index) =>
+        {rules.map((rule) =>
           renderRuleRow(rule)
         )}
         {/* Add Rule button row */}

@@ -4,11 +4,12 @@ import { ShopsService } from '../services/shops.service';
 const shopsService = new ShopsService();
 
 export class ShopsController {
-  async getShop(req: Request, res: Response, next: NextFunction) {
+  async getShop(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { id } = req.params;
       if (!id) {
-        return res.status(400).json({ error: 'Provider ID is required' });
+        res.status(400).json({ error: 'Provider ID is required' });
+        return;
       }
 
       const shop = await shopsService.getShopByProviderId(id);
@@ -18,17 +19,19 @@ export class ShopsController {
     }
   }
 
-  async getCurrentUserShop(req: Request, res: Response, next: NextFunction) {
+  async getCurrentUserShop(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const userId = req.user?.id;
       if (!userId) {
-        return res.status(401).json({ error: 'Unauthorized' });
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
       }
 
       const shop = await shopsService.getShopByProviderId(userId);
       
       if (!shop) {
-        return res.status(404).json({ error: 'Shop not found' });
+        res.status(404).json({ error: 'Shop not found' });
+        return;
       }
 
       res.status(200).json(shop);
@@ -37,11 +40,12 @@ export class ShopsController {
     }
   }
 
-  async createShop(req: Request, res: Response, next: NextFunction) {
+  async createShop(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const userId = req.user?.id;
       if (!userId) {
-        return res.status(401).json({ error: 'Unauthorized' });
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
       }
 
       const shop = await shopsService.createShop(userId, req.body);
@@ -51,11 +55,12 @@ export class ShopsController {
     }
   }
 
-  async updateShop(req: Request, res: Response, next: NextFunction) {
+  async updateShop(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const userId = req.user?.id;
       if (!userId) {
-        return res.status(401).json({ error: 'Unauthorized' });
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
       }
 
       const shop = await shopsService.updateShop(userId, req.body);
@@ -65,11 +70,12 @@ export class ShopsController {
     }
   }
 
-  async createOrUpdateShop(req: Request, res: Response, next: NextFunction) {
+  async createOrUpdateShop(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const userId = req.user?.id;
       if (!userId) {
-        return res.status(401).json({ error: 'Unauthorized' });
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
       }
 
       const shop = await shopsService.createOrUpdateShop(userId, req.body);
@@ -79,11 +85,12 @@ export class ShopsController {
     }
   }
 
-  async deleteShop(req: Request, res: Response, next: NextFunction) {
+  async deleteShop(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const userId = req.user?.id;
       if (!userId) {
-        return res.status(401).json({ error: 'Unauthorized' });
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
       }
 
       await shopsService.deleteShop(userId);
