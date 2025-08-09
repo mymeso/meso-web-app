@@ -24,7 +24,7 @@ export const SaveContinueButton = ({
         </>
       ) : (
         <>
-          Save & Continue
+          Save & Exit
           <ChevronRight className="w-4 h-4" />
         </>
       )}

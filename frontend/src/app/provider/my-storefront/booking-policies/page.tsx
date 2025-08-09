@@ -1,6 +1,5 @@
 "use client";
 import React, { useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
 import Sidebar from '@/components/Sidebar';
 import { ApprovalPolicy } from '@/components/policies/ApprovalPolicy';
 import { PaymentPolicy } from '@/components/policies/PaymentPolicy';
@@ -27,9 +26,8 @@ const POLICIES: { key: PolicyType; label: string; Component: React.FC<any> }[] =
   { key: 'waitlist-policy', label: 'Waitlist', Component: WaitlistPolicy },
 ];
 
-export default function CustomerBookingPoliciesPage() {
-  const router = useRouter();
-  const [activePolicy, setActivePolicy] = useState<PolicyType>('cancellation-policy');
+export default function BookingPoliciesPage() {
+  const [activePolicy, setActivePolicy] = useState<PolicyType>('payment-policy');
   const [allPolicyData, setAllPolicyData] = useState<Record<string, any>>({});
 
   const handleDataChange = useCallback((data: any) => {
@@ -38,10 +36,6 @@ export default function CustomerBookingPoliciesPage() {
       [activePolicy]: data,
     }));
   }, [activePolicy]);
-
-  const handleSave = () => {
-    alert('Policies saved!');
-  };
 
   const ActivePolicyComponent = POLICIES.find(p => p.key === activePolicy)?.Component;
 
@@ -67,12 +61,9 @@ export default function CustomerBookingPoliciesPage() {
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-            {ActivePolicyComponent && <ActivePolicyComponent onDataChange={handleDataChange} />}
-          </div>
-
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 40, gap: '1rem' }}>
-            <button onClick={() => router.push('/provider/my-kottage')} style={{ padding: '10px 20px', border: '1px solid #ccc', borderRadius: 8 }}>Back</button>
-            <button onClick={handleSave} style={{ padding: '10px 20px', backgroundColor: '#2563eb', color: 'white', borderRadius: 8, border: 'none' }}>Save</button>
+            {ActivePolicyComponent && (
+              <ActivePolicyComponent onDataChange={handleDataChange} />
+            )}
           </div>
         </div>
       </main>

@@ -1,6 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { ToggleSwitch } from '@/components/ui/ToggleSwitch';
 import { RadioSelect } from './RadioSelect';
+import { paymentPoliciesApi } from '@/lib/api/paymentPolicies';
+import { useRouter } from 'next/navigation';
+import { ExitButton } from '@/components/ui/ExitButton';
+import { SaveButton } from '@/components/ui/SaveButton';
+import { SaveContinueButton } from '@/components/ui/SaveContinueButton';
 
 interface PaymentMethod {
   name: string;
@@ -11,27 +16,65 @@ interface PaymentPolicyProps {
   onDataChange: (data: any) => void;
 }
 
-export const PaymentPolicy: React.FC<PaymentPolicyProps> = ({ onDataChange }) => {
-  const [onlinePaymentMethods, setOnlinePaymentMethods] = useState<PaymentMethod[]>([
-    { name: 'Debit or Credit Card', enabled: true },
-    { name: 'PayPal', enabled: true },
-    { name: 'Klarna', enabled: true },
-  ]);
+const DEFAULT_ONLINE: PaymentMethod[] = [
+  { name: 'Debit or Credit Card', enabled: true },
+  { name: 'PayPal', enabled: true },
+  { name: 'Klarna', enabled: true },
+];
 
-  const [onsitePaymentMethods, setOnsitePaymentMethods] = useState<PaymentMethod[]>([
-    { name: 'Cash', enabled: true },
-    { name: 'Debit or Credit Card', enabled: true },
-    { name: 'Cash App', enabled: true },
-  ]);
+const DEFAULT_ONSITE: PaymentMethod[] = [
+  { name: 'Cash', enabled: true },
+  { name: 'Debit or Credit Card', enabled: true },
+  { name: 'Cash App', enabled: true },
+];
+
+export const PaymentPolicy: React.FC<PaymentPolicyProps> = ({ onDataChange }) => {
+  const router = useRouter();
+  const [isSaving, setIsSaving] = useState(false);
+
+  const [onlinePaymentMethods, setOnlinePaymentMethods] = useState<PaymentMethod[]>(DEFAULT_ONLINE);
+  const [onsitePaymentMethods, setOnsitePaymentMethods] = useState<PaymentMethod[]>(DEFAULT_ONSITE);
 
   const [selectedPaymentRequirement, setSelectedPaymentRequirement] = useState('full-payment');
+
+  // Load effective policy on mount
+  useEffect(() => {
+    const loadPolicy = async () => {
+      try {
+        const effective = await paymentPoliciesApi.getEffective();
+        if (effective) {
+          // Map requirement
+          const req = effective.requirement;
+          if (req === 'full_payment') setSelectedPaymentRequirement('full-payment');
+          if (req === 'deposit') setSelectedPaymentRequirement('deposit');
+          if (req === 'card_on_file') setSelectedPaymentRequirement('card-on-file');
+          if (req === 'no_upfront') setSelectedPaymentRequirement('no-upfront');
+
+          // Map methods
+          if (Array.isArray(effective.online_methods)) {
+            setOnlinePaymentMethods(prev =>
+              prev.map(m => ({ ...m, enabled: effective.online_methods!.includes(m.name) }))
+            );
+          }
+          if (Array.isArray(effective.onsite_methods)) {
+            setOnsitePaymentMethods(prev =>
+              prev.map(m => ({ ...m, enabled: effective.onsite_methods!.includes(m.name) }))
+            );
+          }
+        }
+      } catch (e) {
+        console.error('Failed to load payment policy', e);
+      }
+    };
+    loadPolicy();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const memoizedOnDataChange = useCallback(() => {
     onDataChange({ onlinePaymentMethods, onsitePaymentMethods, selectedPaymentRequirement });
   }, [onlinePaymentMethods, onsitePaymentMethods, selectedPaymentRequirement, onDataChange]);
 
   useEffect(() => {
-    // Notify parent component of data changes
     memoizedOnDataChange();
   }, [memoizedOnDataChange]);
 
@@ -53,6 +96,42 @@ export const PaymentPolicy: React.FC<PaymentPolicyProps> = ({ onDataChange }) =>
 
   const handlePaymentRequirementChange = (value: string) => {
     setSelectedPaymentRequirement(value);
+  };
+
+  const savePolicy = async () => {
+    const requirementMap: Record<string, any> = {
+      'full-payment': 'full_payment',
+      'deposit': 'deposit',
+      'card-on-file': 'card_on_file',
+      'no-upfront': 'no_upfront',
+    };
+
+    const payload = {
+      requirement: requirementMap[selectedPaymentRequirement],
+      online_methods: onlinePaymentMethods.filter(m => m.enabled).map(m => m.name),
+      onsite_methods: onsitePaymentMethods.filter(m => m.enabled).map(m => m.name),
+    } as any;
+
+    await paymentPoliciesApi.upsertShopDefault(payload);
+  };
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      await savePolicy();
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleSaveAndExit = async () => {
+    setIsSaving(true);
+    try {
+      await savePolicy();
+      router.push('/provider/my-storefront');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -205,6 +284,12 @@ export const PaymentPolicy: React.FC<PaymentPolicyProps> = ({ onDataChange }) =>
             ))}
           </div>
         </div>
+      </div>
+
+      <div className="flex justify-end mt-10 gap-3 flex-wrap">
+        <ExitButton />
+        <SaveButton onClick={handleSave} loading={isSaving} disabled={isSaving} />
+        <SaveContinueButton onClick={handleSaveAndExit} loading={isSaving} disabled={isSaving} />
       </div>
     </div>
   );
