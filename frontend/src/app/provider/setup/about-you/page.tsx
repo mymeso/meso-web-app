@@ -14,7 +14,6 @@ export default function SetupAboutYouPage() {
   return (
     <AboutYouForm 
       onSave={handleSave}
-      saveButtonText="Continue Setup"
     />
   );
 } 

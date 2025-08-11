@@ -1,6 +1,5 @@
 "use client";
-import React, { useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useCallback, useEffect } from 'react';
 import Sidebar from '@/components/Sidebar';
 import { ApprovalPolicy } from '@/components/policies/ApprovalPolicy';
 import { PaymentPolicy } from '@/components/policies/PaymentPolicy';
@@ -8,32 +7,60 @@ import { CancellationPolicy } from '@/components/policies/CancellationPolicy';
 import { LatePolicy } from '@/components/policies/LatePolicy';
 import { PolicyButton } from '@/components/policies/PolicyButton';
 import { ReschedulingPolicy } from '@/components/policies/ReschedulingPolicy';
+import { WaitlistPolicy } from '@/components/policies/WaitlistPolicy';
+import { paymentPoliciesApi, PaymentPolicyResponse } from '@/lib/api/paymentPolicies';
+import { cancellationPoliciesApi, CancellationPolicyResponse } from '@/lib/api/cancellationPolicies';
 
-type PolicyType = 'approval-policy' | 'payment-policy' | 'cancellation-policy' | 'late-policy' | 'booking-policy';
+export type PolicyType =
+  | 'payment-policy'
+  | 'cancellation-policy'
+  | 'rescheduling-policy'
+  | 'lateness-policy'
+  | 'approval-policy'
+  | 'waitlist-policy';
 
-const POLICIES = [
-  { key: 'approval-policy' as PolicyType, label: 'Approval', Component: ApprovalPolicy },
-  { key: 'payment-policy' as PolicyType, label: 'Payment', Component: PaymentPolicy },
-  { key: 'cancellation-policy' as PolicyType, label: 'Cancellation', Component: CancellationPolicy },
-  { key: 'lateness-policy' as PolicyType, label: 'Lateness', Component: LatePolicy },
-  { key: 'rescheduling-policy' as PolicyType, label: 'Rescheduling', Component: ReschedulingPolicy },
+const POLICIES: { key: PolicyType; label: string; Component: React.FC<any> }[] = [
+  { key: 'payment-policy', label: 'Payment', Component: PaymentPolicy },
+  { key: 'cancellation-policy', label: 'Cancellation', Component: CancellationPolicy },
+  { key: 'rescheduling-policy', label: 'Rescheduling', Component: ReschedulingPolicy },
+  { key: 'lateness-policy', label: 'Lateness', Component: LatePolicy },
+  { key: 'approval-policy', label: 'Approval', Component: ApprovalPolicy },
+  { key: 'waitlist-policy', label: 'Waitlist', Component: WaitlistPolicy },
 ];
 
 export default function CustomerBookingPoliciesPage() {
-  const router = useRouter();
-  const [activePolicy, setActivePolicy] = useState<PolicyType>('approval-policy');
+  const [activePolicy, setActivePolicy] = useState<PolicyType>('cancellation-policy');
   const [allPolicyData, setAllPolicyData] = useState<Record<string, any>>({});
+
+  // In-page cache so switching tabs doesn't re-fetch
+  const [paymentCache, setPaymentCache] = useState<PaymentPolicyResponse | undefined>(undefined);
+  const [cancellationCache, setCancellationCache] = useState<CancellationPolicyResponse | undefined>(undefined);
 
   const handleDataChange = useCallback((data: any) => {
     setAllPolicyData(prev => ({
       ...prev,
-      [activePolicy]: data, 
+      [activePolicy]: data,
     }));
-  }, [activePolicy]); 
+  }, [activePolicy]);
 
-  const handleSave = () => {
-    alert('Policies saved!');
-  };
+  // Lazy-load the active policy once
+  useEffect(() => {
+    const load = async () => {
+      if (activePolicy === 'payment-policy' && !paymentCache) {
+        try {
+          const data = await paymentPoliciesApi.getEffective();
+          setPaymentCache(data);
+        } catch (e) { /* no-op */ }
+      }
+      if (activePolicy === 'cancellation-policy' && !cancellationCache) {
+        try {
+          const data = await cancellationPoliciesApi.getEffective();
+          setCancellationCache(data);
+        } catch (e) { /* no-op */ }
+      }
+    };
+    load();
+  }, [activePolicy, paymentCache, cancellationCache]);
 
   const ActivePolicyComponent = POLICIES.find(p => p.key === activePolicy)?.Component;
 
@@ -42,12 +69,12 @@ export default function CustomerBookingPoliciesPage() {
       <Sidebar />
       <main style={{ flex: 1, padding: '2rem' }}>
         <div style={{ maxWidth: 960, margin: '0 auto' }}>
-          <h1 style={{ fontSize: '1.75rem', fontWeight: 700 }}>Customer Booking Policies</h1>
-          <p style={{ marginTop: 8, marginBottom: '2rem', color: '#64748b', fontSize: '1rem' }}>
-            Choose your default settings. Policies for individual service listings can be adjusted in the listing editor.
+          <h1 style={{ fontSize: '1.75rem', fontWeight: 700 }}>Booking Policies</h1>
+          <p style={{ marginTop: 8, marginBottom: '1.5rem', color: '#64748b', fontSize: '0.9rem' }}>
+            Set your default policies. Policies for individual service listings can be adjusted in the listing editor.
           </p>
-          
-          <div style={{ display: 'flex', gap: 16, marginBottom: 24 }}>
+
+          <div className="flex gap-8 mb-6">
             {POLICIES.map(policy => (
               <PolicyButton
                 key={policy.key}
@@ -59,12 +86,18 @@ export default function CustomerBookingPoliciesPage() {
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-            {ActivePolicyComponent && <ActivePolicyComponent onDataChange={handleDataChange} />}
-          </div>
-
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 40, gap: '1rem' }}>
-            <button onClick={() => router.push('/provider/my-kottage')} style={{ padding: '10px 20px', border: '1px solid #ccc', borderRadius: 8 }}>Back</button>
-            <button onClick={handleSave} style={{ padding: '10px 20px', backgroundColor: '#2563eb', color: 'white', borderRadius: 8, border: 'none' }}>Save</button>
+            {ActivePolicyComponent && (
+              <ActivePolicyComponent
+                onDataChange={handleDataChange}
+                initialData={
+                  activePolicy === 'payment-policy'
+                    ? paymentCache
+                    : activePolicy === 'cancellation-policy'
+                    ? cancellationCache
+                    : undefined
+                }
+              />
+            )}
           </div>
         </div>
       </main>

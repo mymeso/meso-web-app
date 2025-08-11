@@ -6,23 +6,26 @@ const aboutYouService = new AboutYouService();
 const shopsService = new ShopsService();
 
 export class AboutYouController {
-  async getAboutYou(req: Request, res: Response, next: NextFunction) {
+  async getAboutYou(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const userId = req.user?.id;
       if (!userId) {
-        return res.status(401).json({ error: 'Unauthorized' });
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
       }
 
       // Get the user's shop
       const shop = await shopsService.getShopByProviderId(userId);
       if (!shop) {
-        return res.status(404).json({ error: 'Shop not found for user' });
+        res.status(404).json({ error: 'Shop not found for user' });
+        return;
       }
 
       const aboutYou = await aboutYouService.getAboutYou(shop.id);
 
       if (!aboutYou) {
-        return res.status(404).json({ error: 'About You data not found' });
+        res.status(404).json({ error: 'About You data not found' });
+        return;
       }
 
       res.status(200).json(aboutYou);
@@ -31,17 +34,19 @@ export class AboutYouController {
     }
   }
 
-  async createAboutYou(req: Request, res: Response, next: NextFunction) {
+  async createAboutYou(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const userId = req.user?.id;
       if (!userId) {
-        return res.status(401).json({ error: 'Unauthorized' });
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
       }
 
       // Get the user's shop
       const shop = await shopsService.getShopByProviderId(userId);
       if (!shop) {
-        return res.status(404).json({ error: 'Shop not found for user' });
+        res.status(404).json({ error: 'Shop not found for user' });
+        return;
       }
 
       const aboutYou = await aboutYouService.createAboutYou(shop.id, req.body);
@@ -51,17 +56,19 @@ export class AboutYouController {
     }
   }
 
-  async updateAboutYou(req: Request, res: Response, next: NextFunction) {
+  async updateAboutYou(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const userId = req.user?.id;
       if (!userId) {
-        return res.status(401).json({ error: 'Unauthorized' });
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
       }
 
       // Get the user's shop
       const shop = await shopsService.getShopByProviderId(userId);
       if (!shop) {
-        return res.status(404).json({ error: 'Shop not found for user' });
+        res.status(404).json({ error: 'Shop not found for user' });
+        return;
       }
 
       const aboutYou = await aboutYouService.updateAboutYou(shop.id, req.body);
@@ -71,17 +78,19 @@ export class AboutYouController {
     }
   }
 
-  async createOrUpdateAboutYou(req: Request, res: Response, next: NextFunction) {
+  async createOrUpdateAboutYou(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const userId = req.user?.id;
       if (!userId) {
-        return res.status(401).json({ error: 'Unauthorized' });
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
       }
 
       // Get the user's shop
       const shop = await shopsService.getShopByProviderId(userId);
       if (!shop) {
-        return res.status(404).json({ error: 'Shop not found for user' });
+        res.status(404).json({ error: 'Shop not found for user' });
+        return;
       }
 
       const aboutYou = await aboutYouService.createOrUpdateAboutYou(shop.id, req.body);
@@ -91,17 +100,19 @@ export class AboutYouController {
     }
   }
 
-  async deleteAboutYou(req: Request, res: Response, next: NextFunction) {
+  async deleteAboutYou(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const userId = req.user?.id;
       if (!userId) {
-        return res.status(401).json({ error: 'Unauthorized' });
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
       }
 
       // Get the user's shop
       const shop = await shopsService.getShopByProviderId(userId);
       if (!shop) {
-        return res.status(404).json({ error: 'Shop not found for user' });
+        res.status(404).json({ error: 'Shop not found for user' });
+        return;
       }
 
       await aboutYouService.deleteAboutYou(shop.id);

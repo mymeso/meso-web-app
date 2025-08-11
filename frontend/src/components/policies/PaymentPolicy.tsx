@@ -1,6 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { ToggleSwitch } from '@/components/ui/ToggleSwitch';
 import { RadioSelect } from './RadioSelect';
+import { paymentPoliciesApi, PaymentPolicyResponse } from '@/lib/api/paymentPolicies';
+import { useRouter } from 'next/navigation';
+import { ExitButton } from '@/components/ui/ExitButton';
+import { SaveButton } from '@/components/ui/SaveButton';
+import { SaveContinueButton } from '@/components/ui/SaveContinueButton';
 
 interface PaymentMethod {
   name: string;
@@ -9,31 +14,73 @@ interface PaymentMethod {
 
 interface PaymentPolicyProps {
   onDataChange: (data: any) => void;
+  initialData?: PaymentPolicyResponse;
 }
 
-export const PaymentPolicy: React.FC<PaymentPolicyProps> = ({ onDataChange }) => {
-  const [onlinePaymentMethods, setOnlinePaymentMethods] = useState<PaymentMethod[]>([
-    { name: 'Debit or Credit Card', enabled: true },
-    { name: 'PayPal', enabled: true },
-    { name: 'Klarna', enabled: true },
-  ]);
+const DEFAULT_ONLINE: PaymentMethod[] = [
+  { name: 'Debit or Credit Card', enabled: true },
+  { name: 'PayPal', enabled: true },
+  { name: 'Klarna', enabled: true },
+];
 
-  const [onsitePaymentMethods, setOnsitePaymentMethods] = useState<PaymentMethod[]>([
-    { name: 'Cash', enabled: true },
-    { name: 'Debit or Credit Card', enabled: true },
-    { name: 'Cash App', enabled: true },
-  ]);
+const DEFAULT_ONSITE: PaymentMethod[] = [
+  { name: 'Cash', enabled: true },
+  { name: 'Debit or Credit Card', enabled: true },
+  { name: 'Cash App', enabled: true },
+];
+
+export const PaymentPolicy: React.FC<PaymentPolicyProps> = ({ onDataChange, initialData }) => {
+  const router = useRouter();
+  const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const [onlinePaymentMethods, setOnlinePaymentMethods] = useState<PaymentMethod[]>(DEFAULT_ONLINE);
+  const [onsitePaymentMethods, setOnsitePaymentMethods] = useState<PaymentMethod[]>(DEFAULT_ONSITE);
 
   const [selectedPaymentRequirement, setSelectedPaymentRequirement] = useState('full-payment');
 
+  // Load effective policy on mount (or use initialData if provided)
+  useEffect(() => {
+    const hydrate = (effective: PaymentPolicyResponse | null | undefined) => {
+      if (!effective) return;
+      const req = effective.requirement;
+      if (req === 'full_payment') setSelectedPaymentRequirement('full-payment');
+      if (req === 'deposit') setSelectedPaymentRequirement('deposit');
+      if (req === 'card_on_file') setSelectedPaymentRequirement('card-on-file');
+      if (req === 'no_upfront') setSelectedPaymentRequirement('no-upfront');
+      if (Array.isArray(effective.online_methods)) {
+        setOnlinePaymentMethods(prev => prev.map(m => ({ ...m, enabled: effective.online_methods!.includes(m.name) })));
+      }
+      if (Array.isArray(effective.onsite_methods)) {
+        setOnsitePaymentMethods(prev => prev.map(m => ({ ...m, enabled: effective.onsite_methods!.includes(m.name) })));
+      }
+    };
 
+    if (initialData) {
+      hydrate(initialData);
+      return;
+    }
+
+    const load = async () => {
+      setIsLoading(true);
+      try {
+        const effective = await paymentPoliciesApi.getEffective();
+        hydrate(effective);
+      } catch (e) {
+        console.error('Failed to load payment policy', e);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialData]);
 
   const memoizedOnDataChange = useCallback(() => {
     onDataChange({ onlinePaymentMethods, onsitePaymentMethods, selectedPaymentRequirement });
   }, [onlinePaymentMethods, onsitePaymentMethods, selectedPaymentRequirement, onDataChange]);
 
   useEffect(() => {
-    // Notify parent component of data changes
     memoizedOnDataChange();
   }, [memoizedOnDataChange]);
 
@@ -57,16 +104,86 @@ export const PaymentPolicy: React.FC<PaymentPolicyProps> = ({ onDataChange }) =>
     setSelectedPaymentRequirement(value);
   };
 
+  const savePolicy = async () => {
+    const requirementMap: Record<string, any> = {
+      'full-payment': 'full_payment',
+      'deposit': 'deposit',
+      'card-on-file': 'card_on_file',
+      'no-upfront': 'no_upfront',
+    };
+
+    const payload = {
+      requirement: requirementMap[selectedPaymentRequirement],
+      online_methods: onlinePaymentMethods.filter(m => m.enabled).map(m => m.name),
+      onsite_methods: onsitePaymentMethods.filter(m => m.enabled).map(m => m.name),
+    } as any;
+
+    await paymentPoliciesApi.upsertShopDefault(payload);
+  };
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      await savePolicy();
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleSaveAndExit = async () => {
+    setIsSaving(true);
+    try {
+      await savePolicy();
+      router.push('/provider/my-storefront');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Loading skeleton
+  if (isLoading) {
+    return (
+      <div className="flex flex-col gap-6">
+        <div className="bg-[#F4F2F0] p-6 rounded-xl border border-[#EAE8E6]">
+          <div className="animate-pulse space-y-4">
+            <div className="h-6 w-40 bg-gray-200 rounded" />
+            <div className="h-12 bg-white rounded-lg" />
+            <div className="h-12 bg-white rounded-lg" />
+            <div className="h-12 bg-white rounded-lg" />
+            <div className="h-12 bg-white rounded-lg" />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {[0,1].map(i => (
+            <div key={i} className="bg-[#F4F2F0] p-6 rounded-xl border border-[#EAE8E6] animate-pulse space-y-3">
+              <div className="h-6 w-64 bg-gray-200 rounded" />
+              <div className="h-12 bg-white rounded-lg" />
+              <div className="h-12 bg-white rounded-lg" />
+              <div className="h-12 bg-white rounded-lg" />
+            </div>
+          ))}
+        </div>
+
+        <div className="flex justify-end gap-3">
+          <div className="h-11 w-24 bg-gray-200 rounded animate-pulse" />
+          <div className="h-11 w-24 bg-gray-200 rounded animate-pulse" />
+          <div className="h-11 w-36 bg-gray-200 rounded animate-pulse" />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
       <div style={{ background: '#F4F2F0', padding: '24px', borderRadius: 12, border: '1px solid #EAE8E6' }}>
-        <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: 16 }}>Booking payment requirements</h3>
+        <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: 16 }}>Payment policy</h3>
         <RadioSelect
           options={[
-            { value: 'full-payment', label: 'Full payment at booking' },
-            { 
-              value: 'deposit', 
-              label: 'Deposit required',
+            { value: 'full-payment', label: 'Full payment required to book' },
+            {
+              value: 'deposit',
+              label: 'Deposit payment required to book',
               expandedContent: (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                   <div>
@@ -130,7 +247,8 @@ export const PaymentPolicy: React.FC<PaymentPolicyProps> = ({ onDataChange }) =>
                 </div>
               )
             },
-            { value: 'payment-after', label: 'Payment after service' },
+            { value: 'card-on-file', label: 'Card on file required to book' },
+            { value: 'no-upfront', label: 'No upfront payment required to book' },
           ]}
           selected={selectedPaymentRequirement}
           onChange={handlePaymentRequirementChange}
@@ -206,6 +324,12 @@ export const PaymentPolicy: React.FC<PaymentPolicyProps> = ({ onDataChange }) =>
             ))}
           </div>
         </div>
+      </div>
+
+      <div className="flex justify-end mt-10 gap-3 flex-wrap">
+        <ExitButton />
+        <SaveButton onClick={handleSave} loading={isSaving} disabled={isSaving} />
+        <SaveContinueButton onClick={handleSaveAndExit} loading={isSaving} disabled={isSaving} />
       </div>
     </div>
   );

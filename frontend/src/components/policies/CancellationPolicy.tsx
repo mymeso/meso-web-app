@@ -1,37 +1,112 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ToggleSwitch } from '../ui/ToggleSwitch';
+import { ExitButton } from '@/components/ui/ExitButton';
+import { SaveButton } from '@/components/ui/SaveButton';
+import { SaveContinueButton } from '@/components/ui/SaveContinueButton';
+import { cancellationPoliciesApi, CancellationPolicyResponse } from '@/lib/api/cancellationPolicies';
+import { useRouter } from 'next/navigation';
 
 interface Rule {
   id: number;
-  paymentType: 'full' | 'deposit' | 'card_on_file';
+  paymentType: 'full_payment' | 'deposit' | 'card_on_file';
   cancelTime: number;
   timeUnit: 'hours' | 'days' | 'day';
   refundType: 'percentage' | 'full_deposit' | 'half_deposit' | 'no_penalty' | 'with_penalty';
   refundValue: number;
 }
 
-export const CancellationPolicy: React.FC = () => {
-  const [rules, setRules] = useState<Rule[]>([
-    { id: 1, paymentType: 'full', cancelTime: 12, timeUnit: 'hours', refundType: 'percentage', refundValue: 50 },
-    { id: 2, paymentType: 'full', cancelTime: 3, timeUnit: 'days', refundType: 'percentage', refundValue: 100 },
-    { id: 3, paymentType: 'deposit', cancelTime: 1, timeUnit: 'day', refundType: 'full_deposit', refundValue: 0 },
-    { id: 4, paymentType: 'deposit', cancelTime: 1, timeUnit: 'day', refundType: 'half_deposit', refundValue: 0 },
-    { id: 5, paymentType: 'card_on_file', cancelTime: 1, timeUnit: 'day', refundType: 'no_penalty', refundValue: 0 },
-    { id: 6, paymentType: 'card_on_file', cancelTime: 4, timeUnit: 'hours', refundType: 'with_penalty', refundValue: 50 },
-  ]);
+interface CancellationPolicyProps {
+  initialData?: CancellationPolicyResponse;
+}
+
+export const CancellationPolicy: React.FC<CancellationPolicyProps> = ({ initialData }) => {
+  const router = useRouter();
+  const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [rules, setRules] = useState<Rule[]>([]);
 
   const [allowFreeCancellation, setAllowFreeCancellation] = useState(true);
 
+  // Hydration helper
+  const hydrateFromResponse = (res?: CancellationPolicyResponse | null) => {
+    if (!res || !res.policy) return false;
+    setAllowFreeCancellation(!!res.policy.allow_free_cancellation);
+    if (Array.isArray(res.rules)) {
+      const mapped: Rule[] = res.rules.map((r, idx) => ({
+        id: idx + 1,
+        paymentType: r.payment_type as Rule['paymentType'],
+        cancelTime: r.cancel_time,
+        timeUnit: r.time_unit,
+        refundType: r.refund_type,
+        refundValue:
+          (r.refund_type === 'percentage' || r.refund_type === 'with_penalty') && typeof r.refund_value === 'number'
+            ? r.refund_value
+            : 0,
+      }));
+      setRules(mapped);
+    }
+    return true;
+  };
+
+  // Fetch effective policy from database (or use initialData on first render)
+  useEffect(() => {
+    const run = async () => {
+      // If initial data provided, hydrate and skip fetch
+      if (initialData && hydrateFromResponse(initialData)) return;
+
+      setIsLoading(true);
+      try {
+        const res = await cancellationPoliciesApi.getEffective();
+        hydrateFromResponse(res);
+      } catch (e) {
+        console.error('Failed to load cancellation policy', e);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    run();
+  }, [initialData]);
+
+  const savePolicy = async () => {
+    const payload = {
+      allow_free_cancellation: allowFreeCancellation,
+      rules: rules.map((r, i) => ({
+        payment_type: r.paymentType,
+        cancel_time: r.cancelTime,
+        time_unit: r.timeUnit,
+        refund_type: r.refundType,
+        refund_value: r.refundType === 'percentage' || r.refundType === 'with_penalty' ? r.refundValue : null,
+        sort_order: i,
+      })),
+    };
+    await cancellationPoliciesApi.upsertShopDefault(payload);
+  };
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      await savePolicy();
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleSaveAndExit = async () => {
+    setIsSaving(true);
+    try {
+      await savePolicy();
+      router.push('/provider/my-storefront');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const addRule = () => {
     const newId = rules.length > 0 ? Math.max(...rules.map(r => r.id)) + 1 : 1;
-    setRules([...rules, {
-      id: newId,
-      paymentType: 'full',
-      cancelTime: 24,
-      timeUnit: 'hours',
-      refundType: 'percentage',
-      refundValue: 50
-    }]);
+    setRules([
+      ...rules,
+      { id: newId, paymentType: 'full_payment', cancelTime: 24, timeUnit: 'hours', refundType: 'percentage', refundValue: 50 },
+    ]);
   };
 
   const removeRule = (id: number) => {
@@ -42,9 +117,8 @@ export const CancellationPolicy: React.FC = () => {
     setRules(rules.map(rule => {
       if (rule.id === id) {
         const updatedRule = { ...rule, [field]: value };
-        
         if (field === 'paymentType') {
-          if (value === 'full') {
+          if (value === 'full_payment') {
             updatedRule.refundType = 'percentage';
             updatedRule.refundValue = 50;
           } else if (value === 'deposit') {
@@ -55,14 +129,13 @@ export const CancellationPolicy: React.FC = () => {
             updatedRule.refundValue = 0;
           }
         }
-        
         return updatedRule;
       }
       return rule;
     }));
   };
 
-  const renderRuleRow = (rule: Rule, index: number, isLast: boolean) => (
+  const renderRuleRow = (rule: Rule) => (
     <div key={rule.id} className="flex items-center gap-3 mb-3">
       <div className="flex-1 flex">
         {/* Left section - Payment Type */}
@@ -72,7 +145,7 @@ export const CancellationPolicy: React.FC = () => {
              onChange={e => updateRule(rule.id, 'paymentType', e.target.value)}
              className="bg-transparent text-sm text-black font-medium cursor-pointer outline-none appearance-none flex-1 pr-6"
            >
-             <option value="full">For full payment</option>
+             <option value="full_payment">For full payment</option>
              <option value="deposit">For deposit payment</option>
              <option value="card_on_file">For card on file</option>
            </select>
@@ -92,7 +165,7 @@ export const CancellationPolicy: React.FC = () => {
              type="number"
              value={rule.cancelTime}
              onChange={e => updateRule(rule.id, 'cancelTime', parseInt(e.target.value))}
-             className="py-1 w-11 h-11 text-center rounded-lg !bg-white text-sm cursor-pointer [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+             className="py-1 w-12 h-11 text-center rounded-lg !bg-white text-sm cursor-pointer [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
            />
            
            <select
@@ -110,7 +183,7 @@ export const CancellationPolicy: React.FC = () => {
           {rule.paymentType !== 'card_on_file' && <span>to receive</span>}
           
           {/* Refund section */}
-          {rule.paymentType === 'full' && (
+          {rule.paymentType === 'full_payment' && (
             <>
               <input
                 type="number"
@@ -172,16 +245,7 @@ export const CancellationPolicy: React.FC = () => {
       >
         -
       </button>
-      {isLast ? (
-        <button 
-          onClick={addRule} 
-          className="w-8 h-8 flex items-center justify-center bg-[#F4F2F0] border-none rounded-md text-gray-600 hover:bg-gray-50"
-        >
-          +
-        </button>
-      ) : (
-        <div className="w-8" />
-      )}
+      <div className="w-8" />
     </div>
   );
 
@@ -192,15 +256,33 @@ export const CancellationPolicy: React.FC = () => {
 
       {/* Rules */}
       <div className="mb-6">
-        {rules.map((rule, index) =>
-          renderRuleRow(rule, index, index === rules.length - 1)
+        {rules.map((rule) =>
+          renderRuleRow(rule)
         )}
+        {/* Add Rule button row */}
+        <div className="flex items-center gap-3">
+          <div className="flex-1 flex items-center justify-center">
+            <button
+              onClick={addRule}
+              className="px-4 py-2 bg-[#F4F2F0] rounded-md text-gray-700 hover:bg-gray-100"
+            >
+              + Add cancellation rule
+            </button>
+          </div>
+          <div className="w-8" />
+        </div>
       </div>
 
       {/* Free Cancellation Toggle */}
       <div className="flex justify-between items-center bg-[#F4F2F0] rounded-lg p-5 mb-8">
         <span className="text-sm font-medium">Allow free cancellation requests</span>
         <ToggleSwitch enabled={allowFreeCancellation} onChange={setAllowFreeCancellation} />
+      </div>
+
+      <div className="flex justify-end mt-10 gap-3 flex-wrap">
+        <ExitButton />
+        <SaveButton onClick={handleSave} loading={isSaving} disabled={isSaving} />
+        <SaveContinueButton onClick={handleSaveAndExit} loading={isSaving} disabled={isSaving} />
       </div>
     </div>
   );
